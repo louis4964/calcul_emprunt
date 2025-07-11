@@ -13,7 +13,7 @@ result_frame_2.grid(row=13, column=4, columnspan=2, pady=10)
 
 tk.Label(root, text="Calcul crédit immobilier - Particulier", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, padx=10, pady=10)
 
-tk.Label(root, text="Salaire mensuel imposable").grid(row=1, column=0, sticky="w", padx=5, pady=5)
+tk.Label(root, text="Salaire net mensuel").grid(row=1, column=0, sticky="w", padx=5, pady=5)
 S1 = tk.Entry(root)
 S1.grid(row=1, column=1, padx=5, pady=5)
 
@@ -43,7 +43,7 @@ def lancer_calcul():
         stats = [
             ("Intérêts bancaire", round(interets, 2)),
             ("Crédit et montant de la maison", round(maison_valeur, 2)),
-            (f"Capital a disposition sur {duree} années.", round(capital, 2)),
+            (f"Capital à disposition sur {duree} années.", round(capital, 2)),
             ("Frais notaire", round(frais_notaire, 2))
         ]
 
@@ -62,9 +62,9 @@ button.grid(row=5, column=0, padx=10, pady=10)
 
 ################################################################################################################################################"
 # "
-tk.Label(root, text="Calcul crédit immobilier - Particulier", font=("Arial", 14, "bold")).grid(row=0, column=4, columnspan=2, padx=10, pady=10)
+tk.Label(root, text="Calcul crédit immobilier - Professionnel", font=("Arial", 14, "bold")).grid(row=0, column=4, columnspan=2, padx=10, pady=10)
 
-tk.Label(root, text="Salaire mensuel imposable").grid(row=1, column=4, sticky="w", padx=5, pady=5)
+tk.Label(root, text="Salaire net mensuel ").grid(row=1, column=4, sticky="w", padx=5, pady=5)
 S2 = tk.Entry(root)
 S2.grid(row=1, column=5, padx=5, pady=5)
 
@@ -88,7 +88,7 @@ tk.Label(root, text="Taux d'assurance (par défaut  0.3 %)").grid(row=6, column=
 taux = tk.Entry(root)
 taux.grid(row=6, column=5, padx=5, pady=5)
 
-tk.Label(root, text="marge_securite : pourcentage de prudence (par défaut 0.9)").grid(row=7, column=4, sticky="w", padx=5, pady=5)
+tk.Label(root, text="marge de securite : pourcentage de prudence (par défaut 0.9)").grid(row=7, column=4, sticky="w", padx=5, pady=5)
 marge = tk.Entry(root)
 marge.grid(row=7, column=5, padx=5, pady=5)
 
@@ -109,16 +109,24 @@ def lancer_calcul_2():
         marge_securite = float(marge.get()) if marge.get() else 0.9
         frais_dossier = float(frais.get()) if frais.get() else 1000
 
-        mensualite_max, capital_emprunt, prix_bien_ht_frais, frais_notaire, budget_total = calcul_apport_immobilier(
-            salaire_mensuel, taux_annuel, duree_annees, apport, type_bien, taux_assurance, marge_securite, frais_dossier)
+        #mensualite_max, capital_emprunt, prix_bien_ht_frais, frais_notaire, budget_total = calcul_apport_immobilier(
+        #    salaire_mensuel, taux_annuel, duree_annees, apport, type_bien, taux_assurance, marge_securite, frais_dossier)
+        
+        taux_notaire = 0.075 if type_bien == "ancien" else 0.03
+        capital_emprunt = ( salaire_mensuel*0.3*12*duree_annees ) / ( 1 + taux_annuel + taux_notaire)
+        mensualite_max = capital_emprunt/(duree_annees*12)
+        frais_notaire = taux_notaire*capital_emprunt
+        budget_total = capital_emprunt + apport + frais_notaire
+        prix_bien_ht_frais = capital_emprunt
 
         headers = ["Bilan", "Valeur"]
         stats = [
-            ("Mensualite max", round(mensualite_max, 2)),
-            ("Capital emprunt", round(capital_emprunt, 2)),
-            ("Prix bien ht frais", round(prix_bien_ht_frais, 2)),
-            ("Frais notaire", round(frais_notaire, 2)),
-            ("Budget total", round(budget_total, 2))
+            ("Mensualite maximale", round(mensualite_max, 2)),
+            ("Prix estimé du bien (hors frais notaire) ", round(prix_bien_ht_frais, 2)),
+            ("Frais notaire éstimés", round(frais_notaire, 2)),
+            ("Budget immobilier disponible (apport inclus) - notaire + prix estimé du bien", round(budget_total, 2)),
+            ("Budget total disponible",round(duree_annees*12*salaire_mensuel*0.3,2)),
+            ("Intérêts bancaire" , round((duree_annees*salaire_mensuel*12*0.3 - capital_emprunt) ))
         ]
 
         for i, header in enumerate(headers):
@@ -141,3 +149,5 @@ button_quit.grid(row=12, column=3, padx=10, pady=10)
 
 root.mainloop()
 
+
+# Faire logiciel pour emprunt ( avec pourcentage salaire, etc)
